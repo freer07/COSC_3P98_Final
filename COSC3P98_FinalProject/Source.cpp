@@ -6,9 +6,11 @@
 #include <malloc.h>
 #include <freeglut.h>
 #include <FreeImage.h>
-
+#include <glm/glm.hpp>
+using namespace glm;
 
 int main(int argc, char** argv) {
+	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
 
