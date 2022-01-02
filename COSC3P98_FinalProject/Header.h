@@ -6,8 +6,13 @@
 #include <FreeImage.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 using namespace glm;
 using namespace std;
+//#define MAX_DEPTH = 5
 
 struct Material {
 	vec3 amb;
@@ -84,18 +89,36 @@ public:
 	}
 };
 
-class Camera {
-	vec3 camLoc, centre, upVector;
-	float camFov;
+class Ray {
+	vec3 location, direction;
 public:
+	Ray(vec3 l, vec3 d) {
+		location = l;
+		direction = d;
+	}
+};
+
+class Camera {
+	vec3 camLocation, focusLocation;
+	float camFov;
+public:	
 	Camera() {
 
 	}
-	Camera(vec3 eL, vec3 ctr, vec3 upVctr, float fov) {
-		camLoc = eL;
-		centre = ctr;
-		upVector = upVctr;
+	Camera(vec3 cL, vec3 fL, float fov) {
+		camLocation = cL;
+		focusLocation = fL;
 		camFov = fov;
+	}	
+	Ray createRay(float x, float y, float width, float height) {
+		//need to calculate the coordinate from the pixel location
+		x = x - ((width - 1) / 2); // minus one since 0->499 if size is 500px
+		y = y - ((height - 1) / 2);
+		vec3 org = camLocation + vec3(x, y, 0);
+		vec3 dir = focusLocation - org;
+		normalize(dir);
+		Ray* r = new Ray(org, dir);
+		return *r;
 	}
 };
 
@@ -109,14 +132,7 @@ public:
 	}
 };
 
-class Ray {
-	vec3 location, direction;
-public :
-	Ray(vec3 l, vec3 d) {
-		location = l;
-		direction = d;
-	}
-};
+
 
 class Hit {
 	vec3 location, norm;

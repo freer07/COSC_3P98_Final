@@ -8,7 +8,11 @@
 #include <FreeImage.h>
 #include "Header.h"
 #include <glm/glm.hpp>
-#include <vector>s
+#include <vector>
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 using namespace glm;
 using namespace std;
 
@@ -16,9 +20,8 @@ void imageSetup() {
 	//TODO: read in text doc to setup image 
 	//For now hard code to test
 
-	Camera* cam = new Camera(vec3(global->screenSizeX / 2, global->screenSizeY / 2, 50), 
-							 vec3(global->screenSizeX / 2, global->screenSizeY / 2, 0), 
-							 vec3(0, 1, 0),
+	Camera* cam = new Camera(vec3(global->screenSizeX / 2, global->screenSizeY, global->depth), 
+							 vec3(global->screenSizeX / 2, 0, 0),
 							 45.0);
 	global->camera = *cam;
 
@@ -28,6 +31,17 @@ void imageSetup() {
 							  new Material(vec3(0.1, 0.1, 0.1), vec3(0.0, 0.37, 0.17), vec3(0.5, 0.5, 0.5), 0.3), 
 							  20));
 
+}
+
+void renderImage(void) {
+	for (int i = 0; i < global->screenSizeX; i++)
+	{
+		for (int j = 0; j < global->screenSizeY; j++)
+		{
+			Ray r = global->camera.createRay(i, j, global->screenSizeX, global->screenSizeY);
+
+		}
+	}
 }
 
 
@@ -40,8 +54,8 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(global->screenSizeX, global->screenSizeY);
 	glutCreateWindow("Ray Tracer");
 	glShadeModel(GL_SMOOTH);
-	/*glutDisplayFunc(display_image);
-	glutKeyboardFunc(keyboard);*/
+	glutDisplayFunc(renderImage);
+	/*glutkeyboardfunc(keyboard); */
 	glMatrixMode(GL_PROJECTION);
 	glOrtho(0, global->screenSizeX, 0, global->screenSizeY, 0, global->depth);
 
