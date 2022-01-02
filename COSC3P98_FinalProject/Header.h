@@ -171,14 +171,19 @@ public:
 		focusLocation = fL;
 		camFov = fov;
 	}	
-	Ray createRay(float x, float y, float width, float height) {		
+	Ray createRay(float x, float y, float width, float height) {	
+		float d = 1 / tan(camFov / 2);
+		x = x + 0.5;
+		y = y + 0.5;
+		float aspectRatio = width / height;
+
+		float raydirx = aspectRatio * (2 * x / width) - 1;
+		float raydiry = (2 * y / height) - 1;
+		float raydirz = d;
 		
-		//need to calculate the coordinate from the pixel location
-		x = x - ((width - 1) / 2); // minus one since 0->499 if size is 500px
-		y = y - ((height - 1) / 2);
-		vec3 org = camLocation + vec3(x, y, 0);
-		vec3 dir = focusLocation - org;
+		vec3 dir = vec3(raydirx, raydiry, raydirz);
 		dir = normalize(dir);
+
 		Ray* r = new Ray(camLocation, dir);
 		return *r;
 	}

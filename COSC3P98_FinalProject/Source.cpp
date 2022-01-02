@@ -17,14 +17,14 @@ void imageSetup() {
 	//TODO: read in text doc to setup image 
 	//For now hard code to test
 
-	Camera* cam = new Camera(vec3(global->screenSizeX / 2, global->screenSizeY, 0), 
-							 vec3(global->screenSizeX / 2, 0, global->depth),
+	Camera* cam = new Camera(vec3(global->screenSizeX / 2, global->screenSizeY / 2, 0), 
+							 vec3(global->screenSizeX / 2, global->screenSizeY / 2, global->depth),
 							 45.0);
 	global->camera = *cam;
 
 	global->lights.push_back(new Light(vec3(1, 1, 1), vec3(1, 1, 1), vec3(global->screenSizeX / 2, global->screenSizeY / 2, 0)));
 
-	global->objects.push_back(new Sphere(vec3(global->screenSizeX / 2, global->screenSizeY / 2, global->depth / 2),
+	global->objects.push_back(new Sphere(vec3(global->screenSizeX / 2, global->screenSizeY / 2, global->depth),
 							  new Material(vec3(0.2, 0.4, 0.2), vec3(0.0, 0.37, 0.17), vec3(0.5, 0.5, 0.5), 0.3),
 							  10));
 
