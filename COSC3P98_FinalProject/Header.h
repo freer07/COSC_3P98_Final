@@ -12,7 +12,7 @@
 #endif
 using namespace glm;
 using namespace std;
-//#define MAX_DEPTH = 5
+#define MAX_DEPTH 5
 
 struct Material {
 	vec3 amb;
@@ -27,12 +27,42 @@ struct Material {
 	}
 };
 
+class Intersect {	
+public:
+	vec3 location, norm;
+	Material* mat;
+	bool intersects;
+	float distance;
+	Intersect() {
+		intersects = false;
+		distance = LONG_MAX;
+	}
+	Intersect(vec3 l, vec3 n, Material* m, float d) {
+		intersects = true;
+		location = l;
+		norm = n;
+		mat = m;
+		distance = d;
+	}
+};
+
+class Ray {
+public:
+	vec3 location, direction;
+	Ray(vec3 l, vec3 d) {
+		location = l;
+		direction = d;
+	}
+};
+
 class Object {
 protected:
 	Material* material;
 	vec3 centre;
 public:
-
+	virtual Intersect intersect(Ray ray) {
+		return*new Intersect();
+	}
 };
 
 class Sphere : public Object {
@@ -42,6 +72,44 @@ public:
 		radius = rad;
 		centre = ctr;		
 		material = mat;
+	}
+
+	Intersect intersect(Ray ray) {
+		Intersect* i = new Intersect();
+		float A, B, C, Disc;
+		A = dot(ray.direction, ray.direction);//should equal 1 of ray is normalized
+
+		//find the distance from the ray location to the centre of the object
+		vec3 distance = ray.location - centre;
+		B = 2 * dot(ray.direction, distance);
+
+		C = dot(distance, distance) - (radius * radius);
+
+		Disc = (B * B) - (4 * C);
+		//if Disc < 0 then no intersection
+		if (Disc < 0) return *i;
+
+		float t0, t1;
+		t0 = ((-1 * B) - sqrtf(Disc)) / 2;
+		t1 = ((-1 * B) + sqrtf(Disc)) / 2;
+		//the smaller positive root is the intersection
+		if (t0 > 0) {
+			vec3 location = ray.location + (ray.direction * t0);
+			vec3 normal = (location - centre) / radius;
+			vec3 interDistVec = location - ray.location;
+			float intersectDist = sqrtf(dot(interDistVec, interDistVec));
+
+			i = new Intersect(location, normal, material, intersectDist);
+		}
+		else if (t1 > 0) {
+			vec3 location = ray.location + (ray.direction * t1);
+			vec3 normal = (location - centre) / radius;
+			vec3 interDistVec = location - ray.location;
+			float intersectDist = sqrtf(dot(interDistVec, interDistVec));
+
+			i = new Intersect(location, normal, material, intersectDist);
+		}
+		return *i;
 	}
 };
 
@@ -89,14 +157,7 @@ public:
 	}
 };
 
-class Ray {
-	vec3 location, direction;
-public:
-	Ray(vec3 l, vec3 d) {
-		location = l;
-		direction = d;
-	}
-};
+
 
 class Camera {
 	vec3 camLocation, focusLocation;
@@ -110,14 +171,15 @@ public:
 		focusLocation = fL;
 		camFov = fov;
 	}	
-	Ray createRay(float x, float y, float width, float height) {
+	Ray createRay(float x, float y, float width, float height) {		
+		
 		//need to calculate the coordinate from the pixel location
 		x = x - ((width - 1) / 2); // minus one since 0->499 if size is 500px
 		y = y - ((height - 1) / 2);
 		vec3 org = camLocation + vec3(x, y, 0);
 		vec3 dir = focusLocation - org;
-		normalize(dir);
-		Ray* r = new Ray(org, dir);
+		dir = normalize(dir);
+		Ray* r = new Ray(camLocation, dir);
 		return *r;
 	}
 };
@@ -132,14 +194,10 @@ public:
 	}
 };
 
-
-
-class Hit {
-	vec3 location, norm;
-	Material* mat;
-public:
-
-};
+//the pixel structure
+typedef struct {
+	GLubyte r, g, b;
+} pixel;
 
 struct glob {
 	float screenSizeX, screenSizeY, depth;
@@ -168,4 +226,4 @@ struct glob {
 	}
 };
 
-glob* global = new glob(500.0, 500.0, 100.0, new vector<Object*>, new vector<Light*>, new Camera, vec3(0.2, 0.2, 0.2));
+glob* global = new glob(500.0, 500.0, 100.0, new vector<Object*>, new vector<Light*>, new Camera, vec3(0.6, 0.6, 0.6));
