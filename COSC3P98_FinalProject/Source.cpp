@@ -56,6 +56,9 @@ vec3 traceRay(Ray ray, int currentDepth) {
 		return global->ambientLight;
 	}
 
+	for(Light * light : global->lights) {
+
+	}
 
 
 	//now determine based on the material of the intersection what the color is for the pixel
@@ -105,7 +108,6 @@ void renderImage(void) {
 	
 	
 	
-
 	glutSwapBuffers();
 	glFlush();
 }
