@@ -40,7 +40,7 @@ vec3 getRayColor(ray& r, objectList& objList)
 
 int main()
 {
-	const int imageWidth = 400;	
+	const int imageWidth = 600;	
 	const auto aspectRatio = 16.0 / 9.0;
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];

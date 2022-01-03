@@ -33,7 +33,7 @@ public:
 		centre = cntr;
 		radius = rad;
 	}
-	bool intersect(ray& r, double t_min, double t_max, intersection& intersect) {
+	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
 		vec3 dir = r.getOrigin() - centre;
 		float a = dot(r.getDirection(), r.getDirection());
 		float b = 2.0 * dot(dir, r.getDirection());
@@ -43,9 +43,9 @@ public:
 			return false;
 		}
 		float root = (-b - sqrt(disc)) / (2.0 * a);
-		if (root < t_min || t_max < root) {
+		if (root < minDist || maxDist < root) {
 			root = (-b + sqrt(disc)) / (2.0 * a);
-			if (root < t_min || t_max < root)
+			if (root < minDist || maxDist < root)
 				return false;
 		}
 
@@ -68,13 +68,13 @@ public:
 	void add(object* obj) {
 		objects.push_back(obj);
 	}
-	bool findFirstIntersection(ray& r, double t_min, double t_max, intersection& intersect) {
+	bool findFirstIntersection(ray& r, double minDist, double maxDist, intersection& intersect) {
 		intersection temp;
 		bool anyIntersection = false;
-		auto closest_so_far = t_max;
+		auto closest_so_far = maxDist;
 
 		for (object* object : objects) {
-			if (object->intersect(r, t_min, closest_so_far, temp)) {
+			if (object->intersect(r, minDist, closest_so_far, temp)) {
 				anyIntersection = true;
 				closest_so_far = temp.dist;
 				intersect = temp;
