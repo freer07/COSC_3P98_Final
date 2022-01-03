@@ -2,9 +2,9 @@
 #define ray_h
 #include <glm/glm.hpp>
 #include "vec3Utils.h"
+#define MAX_DEPTH 10
 
 using namespace glm;
-
 
 class ray 
 {
@@ -12,6 +12,11 @@ public:
 	vec3 orig, dir;
 	ray() {}
 	ray(const vec3& origin, const vec3& direction)
+	{
+		orig = origin;
+		dir = direction;
+	}
+	ray(vec3& origin, vec3& direction)
 	{
 		orig = origin;
 		dir = direction;
