@@ -24,6 +24,9 @@
     <ClInclude Include="vec3Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="objects.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
