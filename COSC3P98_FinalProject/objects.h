@@ -9,6 +9,12 @@ struct intersection {
 	vec3 point;
 	vec3 norm;
 	double dist;
+	bool front_face;
+
+	inline void set_face_normal(const ray& r, const vec3& outward_normal) {
+		front_face = dot(r.getDirection(), outward_normal) < 0;
+		norm = front_face ? outward_normal : -outward_normal;
+	}
 };
 
 class object {
@@ -37,11 +43,16 @@ public:
 			return false;
 		}
 		float root = (-b - sqrt(disc)) / (2.0 * a);
+		if (root < t_min || t_max < root) {
+			root = (-b + sqrt(disc)) / (2.0 * a);
+			if (root < t_min || t_max < root)
+				return false;
+		}
 
 		intersect.dist = root;
 		intersect.point = r.at(root);
-		intersect.norm = (intersect.point - centre) / radius;
-
+		vec3 normal = (intersect.point - centre) / radius;
+		intersect.set_face_normal(r, normal);
 		return true;
 	}
 };
