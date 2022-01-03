@@ -7,6 +7,8 @@
 #include "ray.h"
 #include "vec3Utils.h"
 #include "objects.h"
+#include "o"
+#include "camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb-master/stb_image.h"
@@ -70,9 +72,8 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	auto viewH = 2.0;
-	auto viewW = aspectRatio * viewH;
-	auto focal_length = 1.0;
+	camera cam;			//New Variables
+	int samples = 100;
 
 	const int numOfSamples = 25;
 	vec3 origin = vec3(0, 0, 0);
