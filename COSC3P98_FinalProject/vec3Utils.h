@@ -45,10 +45,10 @@ inline static vec3 random(double min, double max) {
     return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 }
 
-vec3 random_in_unit_sphere() {
+vec3 randomUnitVec3() {
     while (true) {
-        auto p = random(-1, 1);
+        vec3 p = random(-1, 1);
         if (length(p)*length(p) >= 1) continue;
-        return p;
+        return normalize(p);
     }
 }

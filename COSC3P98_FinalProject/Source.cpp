@@ -34,7 +34,8 @@ vec3 getRayColor(ray& r, objectList& objList, int depth)
 	}
 	intersection intersect;
 	if (objList.findFirstIntersection(r, 0.001, INFINITY, intersect)) {
-		point3 target = intersect.point + intersect.norm + random_in_unit_sphere();
+		//Lambertian Diffuse using randomUnitVec3
+		point3 target = intersect.point + intersect.norm + randomUnitVec3();
 		ray newRay = ray(intersect.point, target - intersect.point);
 		return 0.5 * getRayColor(newRay, objList, ++depth);
 	}
