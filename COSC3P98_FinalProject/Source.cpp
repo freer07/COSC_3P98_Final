@@ -34,10 +34,11 @@ vec3 getRayColor(ray& r, objectList& objList, int depth)
 	}
 	intersection intersect;
 	if (objList.findFirstIntersection(r, 0.001, INFINITY, intersect)) {
-		//Lambertian Diffuse using randomUnitVec3
-		point3 target = intersect.point + intersect.norm + randomUnitVec3();
-		ray newRay = ray(intersect.point, target - intersect.point);
-		return 0.5 * getRayColor(newRay, objList, ++depth);
+		ray scattered;
+		color attenuation;
+		if (intersect.mat->scatter(r, intersect, attenuation, scattered))
+			return attenuation * getRayColor(scattered, objList, ++depth);
+		return color(0, 0, 0);
 	}
 	vec3 normRayDir = normalize(r.getDirection());
 	auto t = 0.5 * (normRayDir[1] + 1.0);
@@ -79,9 +80,20 @@ int main()
 	vec3 vertical = vec3(0, viewH, 0);
 	vec3 lower_left = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
 
+	//materials
+	material* material_ground = new lambertian(color(0.8, 0.8, 0.0));
+	material* material_center = new lambertian(color(0.7, 0.3, 0.3));
+	material* material_left = new metal(color(0.8, 0.8, 0.8));
+	material* material_right = new metal(color(0.8, 0.6, 0.2));
+
+	//objects
+
 	objectList objList;
-	objList.add(new sphere(vec3(0, 0, -1), 0.5));
-	objList.add(new sphere(vec3(0, -100.5, -1), 100));
+
+	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
+	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, material_right));
 
 	int index = 0;
 	for (int j = imageHeight - 1; j >= 0; --j)

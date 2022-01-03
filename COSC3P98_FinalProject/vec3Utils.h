@@ -52,3 +52,13 @@ vec3 randomUnitVec3() {
         return normalize(p);
     }
 }
+
+bool nearZero(vec3 v) {
+    // Return true if the vector is close to zero in all dimensions.
+    const auto s = 1e-8;
+    return (fabs(v[0]) < s) && (fabs(v[1]) < s) && (fabs(v[2]) < s);
+}
+
+vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2 * dot(v, n) * n;
+}
