@@ -81,10 +81,10 @@ int main()
 	vec3 lower_left = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
 
 	//materials
-	material* material_ground = new lambertian(color(0.8, 0.8, 0.0));
-	material* material_center = new lambertian(color(0.7, 0.3, 0.3));
-	material* material_left = new metal(color(0.8, 0.8, 0.8));
-	material* material_right = new metal(color(0.8, 0.6, 0.2));
+	material* material_ground = new lambertian(vec3(0.8, 0.8, 0.0));
+	material* material_center = new lambertian(vec3(0.7, 0.3, 0.3));
+	material* shnyMtl = new metal(vec3(0.8, 0.8, 0.8));
+	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
 
 	//objects
 
@@ -92,8 +92,8 @@ int main()
 
 	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
 	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, material_right));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, shnyMtl));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
 
 	int index = 0;
 	for (int j = imageHeight - 1; j >= 0; --j)

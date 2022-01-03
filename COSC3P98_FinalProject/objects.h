@@ -63,6 +63,23 @@ public:
 	}
 };
 
+class blurryMetal : public material {
+public:
+	vec3 color;
+	float blur;
+	blurryMetal(const vec3& c, float b) {
+		color = c;
+		blur = b;
+	}
+
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
+		vec3 reflected = reflect(normalize(r.getDirection()), intrsct.norm) + blur * randomUnitVec3();
+		scattered = ray(intrsct.point, reflected);
+		attenuation = color;
+		return (dot(scattered.getDirection(), intrsct.norm) > 0);
+	}
+};
+
 class object {
 public:
 	vec3 centre;
