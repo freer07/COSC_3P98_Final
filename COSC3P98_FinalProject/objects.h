@@ -5,21 +5,85 @@
 
 using namespace std;
 
+class material;
+
 struct intersection {
 	vec3 point;
 	vec3 norm;
 	double dist;
 	bool front_face;
+	material* mat;
 
 	inline void set_face_normal(const ray& r, const vec3& outward_normal) {
 		front_face = dot(r.getDirection(), outward_normal) < 0;
 		norm = front_face ? outward_normal : -outward_normal;
+	};
+};
+
+
+class material {
+public:
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) {
+		return 0;
+	}
+};
+
+class lambertian : public material {
+public:
+	vec3 color;
+	lambertian(const vec3& c) {
+		color = c;
+	}
+
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
+		auto dir = intrsct.norm + randomUnitVec3();
+
+		if (nearZero(dir)) {
+			dir = intrsct.norm;
+		}
+
+		scattered = ray(intrsct.point, dir);
+		attenuation = color;
+		return true;
+	}
+};
+
+class metal : public material {
+public:
+	vec3 color;
+	metal(const vec3& c) {
+		color = c;
+	}
+
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
+		vec3 reflected = reflect(normalize(r.getDirection()), intrsct.norm);
+		scattered = ray(intrsct.point, reflected);
+		attenuation = color;
+		return (dot(scattered.getDirection(), intrsct.norm) > 0);
+	}
+};
+
+class blurryMetal : public material {
+public:
+	vec3 color;
+	float blur;
+	blurryMetal(const vec3& c, float b) {
+		color = c;
+		blur = b;
+	}
+
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
+		vec3 reflected = reflect(normalize(r.getDirection()), intrsct.norm) + blur * randomUnitVec3();
+		scattered = ray(intrsct.point, reflected);
+		attenuation = color;
+		return (dot(scattered.getDirection(), intrsct.norm) > 0);
 	}
 };
 
 class object {
 public:
 	vec3 centre;
+	material* mat;
 	virtual bool intersect(ray& r, double t_min, double t_max, intersection& intersect) {
 		return 0;
 	}
@@ -29,9 +93,10 @@ class sphere : public object {
 public:	
 	float radius;
 	sphere() {}
-	sphere(vec3 cntr, float rad) {
+	sphere(vec3 cntr, float rad, material* m) {
 		centre = cntr;
 		radius = rad;
+		mat = m;
 	}
 	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
 		vec3 dir = r.getOrigin() - centre;
@@ -51,6 +116,7 @@ public:
 
 		intersect.dist = root;
 		intersect.point = r.at(root);
+		intersect.mat = mat;
 		vec3 normal = (intersect.point - centre) / radius;
 		intersect.set_face_normal(r, normal);
 		return true;
