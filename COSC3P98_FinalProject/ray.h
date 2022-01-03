@@ -1,6 +1,7 @@
 #ifndef ray_h
 #define ray_h
-
+#include <glm/glm.hpp>
+using namespace glm;
 class ray 
 {
 public: 

@@ -21,7 +21,7 @@
     <ClInclude Include="ray.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="vector.h">
+    <ClInclude Include="vec3Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

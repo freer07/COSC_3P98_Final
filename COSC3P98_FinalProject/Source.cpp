@@ -5,6 +5,7 @@
 #include <sstream>
 #include <glm/glm.hpp>
 #include "ray.h"
+#include "vec3Utils.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb-master/stb_image.h"
@@ -28,40 +29,49 @@ using namespace std;
 
 vec3 getRayColor(const ray& r)
 {
-	vec3 direc = r.getDirection().unitVector();
-	float t = 0.5 * (direc.getY() + 1.0);
-	return ((1.0 - t) * vec3(1.0, 1.0, 1.0)) + (t * vec3(0.5, 0.7, 1.0));
-
+	vec3 direc = normalize(r.getDirection());
+	float t = 0.5 * (direc[1] + 1.0);
+	float t1 = (1.0 - t);
+	return (t1 * vec3(1.0, 1.0, 1.0)) + (t * vec3(0.5, 0.7, 1.0));
 }
 
 int main()
 {
-	int w = 400;
-	int h = static_cast<int>(w / (16.0 / 9.0));
+	const int imageWidth = 400;
+	const int imageHeight = 200;
+	const int aspectRatio = imageWidth / imageHeight;
+	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	viewH = 2.0;
-	viewW = (16 / 9) * 2.0;
+	auto viewH = 2.0;
+	auto viewW = aspectRatio * 2.0;
+	auto focal_length = 1.0;
 
-	auto origin = vec3(0, 0, 0);
-	auto horizontal = vec3(viewW, 0, 0);
-	auto vertical = vec3(0, viewH, 0);
-	auto lower_left = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, 1.0);
+	vec3 origin = vec3(0, 0, 0);
+	vec3 horizontal = vec3(viewW, 0, 0);
+	vec3 vertical = vec3(0, viewH, 0);
+	vec3 lower_left = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
 	
-	std::cout << "P3\n" << w << h << "\255\n";
+	//std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n 255\n";
 
-	for (int i = 0; i < h; i++)
+	int index = 0;
+	for (int j = imageHeight - 1; j >= 0; --j)
 	{
-		for (int j = 0; j < w; j++)
+		for (int i = 0; i < imageWidth; ++i)
 		{
-			float u = float(i) / (w - 1);
-			float v = float(j) / (h - 1);
+			float u = float(i) / (imageWidth - 1);
+			float v = float(j) / (imageHeight - 1);
 			ray r(origin, lower_left + u * horizontal + v * vertical - origin);
-			vec3 pixelColour = getRayColor(r);
+			vec3 pixelColor = getRayColor(r);
 
-			auto r = pixelColor.getX() * 255.999;
-			auto g = pixelColor.getY() * 255.999;
-			auto b = pixelColor.getX() * 255.999;
-			std::cout << r << ' ' << g << ' ' << b << '\n';
+			auto pixR = pixelColor[0] * 255.999;
+			auto pixG = pixelColor[1] * 255.999;
+			auto pixB = pixelColor[2] * 255.999;
+			pixels[index++] = pixR;
+			pixels[index++] = pixG;
+			pixels[index++] = pixB;
+			//std::cout << r << ' ' << g << ' ' << b << '\n';
 		}
 	}
+
+	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
 }
