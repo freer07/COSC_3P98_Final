@@ -71,8 +71,8 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 25;
-	camera cam(vec3(-2,2,1),vec3(0,0,-1),vec3(0,1,0),90,aspectRatio);
+	const int numOfSamples = 100;
+	camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 20, aspectRatio);
 
 	//materials
 	material* material_ground = new lambertian(vec3(0.8, 0.8, 0.0));
@@ -87,7 +87,7 @@ int main()
 	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
 	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
 	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.4, material_left));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, material_left));
 	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
 
 	int index = 0;

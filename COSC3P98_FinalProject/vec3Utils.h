@@ -63,12 +63,9 @@ vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2 * dot(v, n) * n;
 }
 
-vec3 refract(const vec3& u, const vec3& v, double eta)
-{
-    float theta = static_cast<float>(fmin(dot(-u, v), 1.0));
-    vec3 perpindicular = eta * (u + (theta * v));
-    vec3 parallel = -sqrt(fabs(1.0 - perpindicular.length())) * v;
-
-    return parallel + perpindicular;
-
+vec3 refract(const vec3& u, const vec3& n, double eta) {
+    auto cos = fmin(dot(-u, n), 1.0);
+    vec3 perp = eta * (u + (cos * n));
+    vec3 para = -sqrt(fabs(1.0 - ((double)length(perp) * (double)length(perp)))) * n;
+    return perp + para;
 }

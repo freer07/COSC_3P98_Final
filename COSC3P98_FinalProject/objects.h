@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ray.h"
+#include "vec3Utils.h"
 #include <vector>
 
 using namespace std;
@@ -82,35 +83,33 @@ public:
 
 class dielectric : public material {//New material class
 public:
-	float ir;
-	dielectric(float index)
-	{
+	double ir;
+	dielectric(double index) {
 		ir = index;
 	}
 	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
-		attenuation = color(1.0, 1.0, 1.0);
-		float refractRatio = intrsct.front_face ? (1.0 / ir) : ir;
+		attenuation = vec3(1.0, 1.0, 1.0);
+		double refractRatio = intrsct.front_face ? (1.0 / ir) : ir;
 		
 		vec3 unitDir = normalize(r.getDirection());
-		float theta = fmin(dot(-unitDir, intrsct.norm), 1.0);
-		float sinTheta = sqrt(1.0 - (theta * theta));
+		double cos = fmin(dot(-unitDir, intrsct.norm), 1.0);
+		double sin = sqrt(1.0 - cos * cos);
 
-		vec3 direct;
+		vec3 direction;
 
-		if ((ir * sinTheta > 1.0) || reflectance(theta, refractRatio)) direct = reflect(unitDir, intrsct.norm);
-		
-		else direct = refract(unitDir, intrsct.norm, refractRatio);
-		
-		scattered = ray(intrsct.point, direct);
+		if ((refractRatio * sin > 1.0) || reflectance(cos, refractRatio) > random_double())
+			direction = reflect(unitDir, intrsct.norm);
+		else
+			direction = refract(unitDir, intrsct.norm, refractRatio);
+
+		scattered = ray(intrsct.point, direction);
 		return true;
 	}
-public:
-	float ir;
-	static float reflectance(float cosine, float ind)//Schlicks approximation for reflectance
+	double reflectance(float cos, float inx)//Schlicks approximation for reflectance
 	{
-		float r0 = (1 - ind) / (1 + ind);
-		r0 *= r0;
-		return r0 + (1 - r0) * pow((1 - cosine), 5);
+		double r0 = (1 - inx) / (1 + inx);
+		r0 = r0 * r0;
+		return r0 + (1 - r0) * pow((1 - cos), 5);
 	}
 };
 
@@ -126,7 +125,7 @@ public:
 class sphere : public object {
 public:	
 	float radius;
-	sphere() {}
+	sphere() { radius = 0; }
 	sphere(vec3 cntr, float rad, material* m) {
 		centre = cntr;
 		radius = rad;

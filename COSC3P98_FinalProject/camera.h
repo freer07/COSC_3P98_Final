@@ -5,12 +5,6 @@
 
 class camera {
 public:
-
-	float ratio;
-	float viewH;
-	float viewW;
-	float focal;
-
 	camera()
 	{
 		auto ratio = 16.0 / 9.0;
@@ -18,12 +12,12 @@ public:
 		auto viewW = ratio * viewH;
 		auto focal = 1.0;
 		
-		vec3 origin = vec3(0, 0, 0);
-		vec3 horiz = vec3(viewH, 0, 0);
-		vec3 vert = vec3(0, viewH, 0);
+		origin = vec3(0, 0, 0);
+		horiz = vec3(viewH, 0, 0);
+		vert = vec3(0, viewH, 0);
 		
 		vec3 tempVec = vec3(0, 0, focal);
-		vec3 lowerLeft = origin - (horiz / 2) - (vert / 2) - tempVec;
+		lowerLeft = origin - (horiz / 2) - (vert / 2) - tempVec;
 	}
 
 	camera(vec3 lookfrom, vec3 lookat, vec3 up, float fov, float ratio)
@@ -41,10 +35,10 @@ public:
 		vec3 v = cross(w, u);
 
 
-		vec3 origin = lookfrom;
-		vec3 horiz = viewW * u;
-		vec3 vert   = viewH * v;
-		vec3 lowerLeft = origin - (horiz / 2) - (vert / 2) - w;
+		origin = lookfrom;
+		horiz = viewW * u;
+		vert   = viewH * v;
+		lowerLeft = origin - (horiz / 2) - (vert / 2) - w;
 	}
 
 

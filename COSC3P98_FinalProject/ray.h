@@ -2,7 +2,7 @@
 #define ray_h
 #include <glm/glm.hpp>
 #include "vec3Utils.h"
-#define MAX_DEPTH 10
+#define MAX_DEPTH 50
 
 using namespace glm;
 
