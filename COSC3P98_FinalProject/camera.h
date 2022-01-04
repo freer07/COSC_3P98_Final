@@ -22,11 +22,11 @@ public:
 		vec3 horiz = vec3(viewH, 0, 0);
 		vec3 vert = vec3(0, viewH, 0);
 		
-		vec3 tempVec = (0, 0, focal);
+		vec3 tempVec = vec3(0, 0, focal);
 		vec3 lowerLeft = origin - (horiz / 2) - (vert / 2) - tempVec;
 	}
 
-	camera(vec3 origin, vec3 lookat, vec3 up, float fov, float ratio)
+	camera(vec3 lookfrom, vec3 lookat, vec3 up, float fov, float ratio)
 	{
 		float theta = fov * (PI / 180);
 		float h = tan(theta / 2);
@@ -34,16 +34,17 @@ public:
 		float viewH = 2.0 * h;
 		float viewW = ratio * viewH;
 
-		vec3 newVec = origin - lookat;
+		vec3 newVec = lookfrom - lookat;
+		
 		vec3 w = normalize(newVec);
-		vec3 u = normalize(cross(up, w);
+		vec3 u = normalize(cross(up, w));
 		vec3 v = cross(w, u);
 
 
 		vec3 origin = lookfrom;
 		vec3 horiz = viewW * u;
 		vec3 vert   = viewH * v;
-		vec3 lowerLeft = origin - (horizontal / 2) - (vertical / 2) - w;
+		vec3 lowerLeft = origin - (horiz / 2) - (vert / 2) - w;
 	}
 
 

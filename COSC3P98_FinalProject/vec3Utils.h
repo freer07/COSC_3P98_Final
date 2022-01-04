@@ -62,3 +62,13 @@ bool nearZero(vec3 v) {
 vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2 * dot(v, n) * n;
 }
+
+vec3 refract(const vec3& u, const vec3& v, double eta)
+{
+    float theta = static_cast<float>(fmin(dot(-u, v), 1.0));
+    vec3 perpindicular = eta * (u + (theta * v));
+    vec3 parallel = -sqrt(fabs(1.0 - perpindicular.length())) * v;
+
+    return parallel + perpindicular;
+
+}

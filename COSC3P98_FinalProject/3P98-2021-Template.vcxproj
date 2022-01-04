@@ -159,6 +159,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="objects.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="vec3Utils.h" />

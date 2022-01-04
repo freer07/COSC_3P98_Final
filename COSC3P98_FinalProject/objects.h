@@ -80,6 +80,40 @@ public:
 	}
 };
 
+class dielectric : public material {//New material class
+public:
+	float ir;
+	dielectric(float index)
+	{
+		ir = index;
+	}
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
+		attenuation = color(1.0, 1.0, 1.0);
+		float refractRatio = intrsct.front_face ? (1.0 / ir) : ir;
+		
+		vec3 unitDir = normalize(r.getDirection());
+		float theta = fmin(dot(-unitDir, intrsct.norm), 1.0);
+		float sinTheta = sqrt(1.0 - (theta * theta));
+
+		vec3 direct;
+
+		if ((ir * sinTheta > 1.0) || reflectance(theta, refractRatio)) direct = reflect(unitDir, intrsct.norm);
+		
+		else direct = refract(unitDir, intrsct.norm, refractRatio);
+		
+		scattered = ray(intrsct.point, direct);
+		return true;
+	}
+public:
+	float ir;
+	static float reflectance(float cosine, float ind)//Schlicks approximation for reflectance
+	{
+		float r0 = (1 - ind) / (1 + ind);
+		r0 *= r0;
+		return r0 + (1 - r0) * pow((1 - cosine), 5);
+	}
+};
+
 class object {
 public:
 	vec3 centre;

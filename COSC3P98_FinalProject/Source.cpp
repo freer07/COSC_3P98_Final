@@ -7,7 +7,6 @@
 #include "ray.h"
 #include "vec3Utils.h"
 #include "objects.h"
-#include "o"
 #include "camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -72,19 +71,13 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	camera cam;			//New Variables
-	int samples = 100;
-
 	const int numOfSamples = 25;
-	vec3 origin = vec3(0, 0, 0);
-	vec3 horizontal = vec3(viewW, 0, 0);
-	vec3 vertical = vec3(0, viewH, 0);
-	vec3 lower_left = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
+	camera cam(vec3(-2,2,1),vec3(0,0,-1),vec3(0,1,0),90,aspectRatio);
 
 	//materials
 	material* material_ground = new lambertian(vec3(0.8, 0.8, 0.0));
-	material* material_center = new lambertian(vec3(0.7, 0.3, 0.3));
-	material* shnyMtl = new metal(vec3(0.8, 0.8, 0.8));
+	material* material_center = new lambertian(vec3(0.1, 0.2, 0.5));
+	material* material_left   = new dielectric(1.5);
 	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
 
 	//objects
@@ -93,7 +86,8 @@ int main()
 
 	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
 	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, shnyMtl));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.4, material_left));
 	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
 
 	int index = 0;
@@ -105,7 +99,7 @@ int main()
 			for (int s = 0; s < numOfSamples; ++s) {	
 				auto u = (i + random_double()) / (imageWidth - 1);
 				auto v = (j + random_double()) / (imageHeight - 1);
-				ray r = ray(origin, lower_left + u * horizontal + v * vertical - origin);
+				ray r = cam.getRay(u, v);
 				pixelColor += getRayColor(r, objList, 0);
 			}
 
