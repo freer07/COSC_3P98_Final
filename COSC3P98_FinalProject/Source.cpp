@@ -1,137 +1,118 @@
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-#include <stdlib.h>
+#include <iostream>
 #include <stdio.h>
-#include <malloc.h>
-#include <freeglut.h>
-#include <FreeImage.h>
-#include "Header.h"
+#include <stdint.h>
+#include <fstream>
+#include <sstream>
 #include <glm/glm.hpp>
-#include <vector>
-#include <cmath>
+#include "ray.h"
+#include "vec3Utils.h"
+#include "objects.h"
+#include "camera.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb-master/stb_image.h"
+
+#define STBI_MSC_SECURE_CRT
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb-master/stb_image_write.h"
+
+#define CHANNEL_NUM 3
+
+// Type aliases for vec3
+using point3 = vec3;   // 3D point
+using color = vec3;    // RGB color
+
+
+#define M_PI 3.14159265358979323846
 using namespace glm;
 using namespace std;
 
-void imageSetup() {
-	//TODO: read in text doc to setup image 
-	//For now hard code to test
 
-	Camera* cam = new Camera(vec3(global->screenSizeX / 2, global->screenSizeY / 2, 0), 
-							 vec3(global->screenSizeX / 2, global->screenSizeY / 2, global->depth),
-							 45.0);
-	global->camera = *cam;
-
-	global->lights.push_back(new Light(vec3(1, 1, 1), vec3(1, 1, 1), vec3(global->screenSizeX / 2, global->screenSizeY / 2, 0)));
-
-	global->objects.push_back(new Sphere(vec3(global->screenSizeX / 2, global->screenSizeY / 2, global->depth),
-							  new Material(vec3(0.2, 0.4, 0.2), vec3(0.0, 0.37, 0.17), vec3(0.5, 0.5, 0.5), 0.3),
-							  10));
-
+vec3 getRayColor(ray& r, objectList& objList, int depth)
+{
+	if (depth > MAX_DEPTH) {
+		return vec3(0, 0, 0);
+	}
+	intersection intersect;
+	if (objList.findFirstIntersection(r, 0.001, INFINITY, intersect)) {
+		ray scattered;
+		color attenuation;
+		if (intersect.mat->scatter(r, intersect, attenuation, scattered))
+			return attenuation * getRayColor(scattered, objList, ++depth);
+		return color(0, 0, 0);
+	}
+	vec3 normRayDir = normalize(r.getDirection());
+	auto t = 0.5 * (normRayDir[1] + 1.0);
+	return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-Intersect findIntersection(Ray ray) {
-	Intersect* firstIntersection = new Intersect();
-
-	//interate through all the objects to find an intersection
-	for (Object* object : global->objects) {
-		Intersect i = object->intersect(ray);
-		//find if i is closer to ray than current firstIntersection
-		if (i.intersects) {
-			if (!firstIntersection->intersects || firstIntersection->distance < i.distance) {
-				firstIntersection = &i;
-			}
-		}
+float clamp(float f, float min, float max) {
+	if (f < min) {
+		return min;
 	}
-
-	return *firstIntersection;
+	if (f > max) {
+		return max;
+	}
+	return f;
 }
 
-vec3 traceRay(Ray ray, int currentDepth) {
-	if (currentDepth > MAX_DEPTH) {
-		return global->ambientLight;
-	}
-	Intersect i = findIntersection(ray);
-	if (!i.intersects) {
-		return global->ambientLight;
-	}
-
-
-
-	//now determine based on the material of the intersection what the color is for the pixel
-	vec3 illumination = (global->ambientLight * i.mat->amb);
-
-	/*
-	// ambient
-    vec3 ambient = lightColor * material.ambient;
-  	
-    // diffuse 
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = lightColor * (diff * material.diffuse);
-    
-    // specular
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = lightColor * (spec * material.specular);  
-        
-    vec3 result = ambient + diffuse + specular;
-	*/
-	vec3 result = illumination;
-
-	return result;
+void correctColor(vec3& color, float spp) {
+	float f = (1 / spp);
+	color[0] = clamp(sqrt(color[0] * f), 0.0, 1.0);
+	color[1] = clamp(sqrt(color[1] * f), 0.0, 1.0);
+	color[2] = clamp(sqrt(color[2] * f), 0.0, 1.0);
 }
 
+int main()
+{
+	srand(time(NULL));
+	const int imageWidth = 500;	
+	const auto aspectRatio = 16.0 / 9.0;
+	const int imageHeight = imageWidth / aspectRatio;
+	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-void renderImage(void) {
-	glClear(GL_COLOR_BUFFER_BIT);
+	const int numOfSamples = 100;
+	camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 20, aspectRatio);
 
-	vector<vec3> view(global->screenSizeX * global->screenSizeY);
+	//materials
+	material* material_ground = new lambertian(vec3(0.8, 0.8, 0.0));
+	material* material_center = new lambertian(vec3(0.1, 0.2, 0.5));
+	material* material_left   = new dielectric(1.5);
+	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
 
-	glBegin(GL_POINTS);
-	for (int i = 0; i < global->screenSizeX; i++)
+	//objects
+
+	objectList objList;
+
+	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
+	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, material_left));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
+
+	int index = 0;
+	for (int j = imageHeight - 1; j >= 0; --j)
 	{
-		for (int j = 0; j < global->screenSizeY; j++)
+		for (int i = 0; i < imageWidth; ++i)
 		{
-			Ray r = global->camera.createRay(i, j, global->screenSizeX, global->screenSizeY);
-			vec3 pixel = traceRay(r, 0);
-			glColor3f(pixel[0], pixel[1], pixel[2]);
-			glVertex2i(i, j);
+			vec3 pixelColor(0, 0, 0);			
+			for (int s = 0; s < numOfSamples; ++s) {	
+				auto u = (i + random_double()) / (imageWidth - 1);
+				auto v = (j + random_double()) / (imageHeight - 1);
+				ray r = cam.getRay(u, v);
+				pixelColor += getRayColor(r, objList, 0);
+			}
+
+			correctColor(pixelColor, (float)numOfSamples);
+
+			auto pixR = pixelColor[0] * 255;
+			auto pixG = pixelColor[1] * 255;
+			auto pixB = pixelColor[2] * 255;
+			pixels[index++] = pixR;
+			pixels[index++] = pixG;
+			pixels[index++] = pixB;
 		}
 	}
-	glEnd();
-	
-	
-	
 
-	glutSwapBuffers();
-	glFlush();
-}
-
-
-int main(int argc, char** argv) {
-	imageSetup();
-	
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-
-	glutInitWindowSize(global->screenSizeX, global->screenSizeY);
-	glutCreateWindow("Ray Tracer");
-	glShadeModel(GL_SMOOTH);
-	glutDisplayFunc(renderImage);
-	/*glutkeyboardfunc(keyboard); */
-
-	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(0, global->screenSizeX, 0, global->screenSizeY);
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	//glEnable(GL_DEPTH_TEST);
-
-	/*init_menu();
-	show_keys();*/
-
-	glutMainLoop();
-
-	return 0;
+	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
 }
