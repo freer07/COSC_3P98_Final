@@ -61,6 +61,16 @@ float clamp(float f, float min, float max) {
 }
 
 void correctColor(vec3& color, float spp) {
+	if (color[0] == NAN) {
+		color[0] = 0.0;
+	}
+	if (color[1] == NAN) {
+		color[1] = 0.0;
+	}
+	if (color[2] == NAN) {
+		color[2] = 0.0;
+	}
+
 	float f = (1 / spp);
 	color[0] = clamp(sqrt(color[0] * f), 0.0, 1.0);
 	color[1] = clamp(sqrt(color[1] * f), 0.0, 1.0);
