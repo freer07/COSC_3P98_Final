@@ -113,6 +113,19 @@ public:
 	}
 };
 
+class lightEmitting : public material {
+public:
+	vec3 lightColor;
+	lightEmitting(vec3 c) {
+		lightColor = c;
+	}
+
+	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {		
+		attenuation = lightColor;
+		return false;
+	}
+};
+
 class object {
 public:
 	vec3 centre;
