@@ -74,8 +74,8 @@ public:
 	}
 
 	virtual bool scatter(const ray& r, const intersection& intrsct, vec3& attenuation, ray& scattered) override {
-		vec3 reflected = reflect(normalize(r.getDirection()), intrsct.norm) + blur * randomUnitVec3();
-		scattered = ray(intrsct.point, reflected);
+		vec3 reflected = reflect(normalize(r.getDirection()), intrsct.norm);
+		scattered = ray(intrsct.point, reflected + blur * randomUnitVec3());
 		attenuation = color;
 		return (dot(scattered.getDirection(), intrsct.norm) > 0);
 	}
