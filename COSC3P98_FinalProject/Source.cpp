@@ -28,22 +28,26 @@ using namespace glm;
 using namespace std;
 
 
-vec3 getRayColor(ray& r, objectList& objList, int depth)
-{
+vec3 getRayColor(ray& r, objectList& objList, vec3 background, int depth) {
 	if (depth > MAX_DEPTH) {
 		return vec3(0, 0, 0);
 	}
+
 	intersection intersect;
-	if (objList.findFirstIntersection(r, 0.001, INFINITY, intersect)) {
-		ray scattered;
-		color attenuation;
-		if (intersect.mat->scatter(r, intersect, attenuation, scattered))
-			return attenuation * getRayColor(scattered, objList, ++depth);
-		return color(0, 0, 0);
+	
+	//If ray doesn't hit anything return background color
+	if (!objList.findFirstIntersection(r, 0.001, INFINITY, intersect)) {
+		return background;
 	}
-	vec3 normRayDir = normalize(r.getDirection());
-	auto t = 0.5 * (normRayDir[1] + 1.0);
-	return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+
+	ray scattered;
+	color attenuation;
+	if (intersect.mat->scatter(r, intersect, attenuation, scattered)) {
+		return attenuation * getRayColor(scattered, objList, background, ++depth);
+	}
+	else {
+		return attenuation;
+	}
 }
 
 float clamp(float f, float min, float max) {
@@ -57,6 +61,16 @@ float clamp(float f, float min, float max) {
 }
 
 void correctColor(vec3& color, float spp) {
+	if (color[0] == NAN) {
+		color[0] = 0.0;
+	}
+	if (color[1] == NAN) {
+		color[1] = 0.0;
+	}
+	if (color[2] == NAN) {
+		color[2] = 0.0;
+	}
+
 	float f = (1 / spp);
 	color[0] = clamp(sqrt(color[0] * f), 0.0, 1.0);
 	color[1] = clamp(sqrt(color[1] * f), 0.0, 1.0);
@@ -71,23 +85,36 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 100;
-	camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 20, aspectRatio);
+	const int numOfSamples = 10;
+	camera cam(point3(0, 1, 5), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
+
+	//background colors
+	vec3 brightDay = vec3(0.70, 0.80, 1.00);
+	vec3 noLight = vec3(0.0, 0.0, 0.0);
+
+	vec3 background = brightDay;
 
 	//materials
-	material* material_ground = new lambertian(vec3(0.8, 0.8, 0.0));
-	material* material_center = new lambertian(vec3(0.1, 0.2, 0.5));
-	material* material_left   = new dielectric(1.5);
+	material* matteYellow = new lambertian(vec3(0.8, 0.8, 0.0));
+	material* matteBlue = new lambertian(vec3(0.1, 0.2, 0.5));
+	material* glass   = new dielectric(1.5);
 	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
+	material* mirrorMtl = new metal(color(0.8, 0.85, 0.88));
+	material* whiteLight = new lightEmitting(vec3(4.0, 4.0, 4.0));//light is brighter than 1 inorder to light other objects 
 
 	//objects
-
 	objectList objList;
-
-	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-	objList.add(new cube(vec3(130, 0, 65), vec3(295, 165, 230), material_center));
+	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, matteYellow));
+	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, matteBlue));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, glass));
+	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, glass));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, matteBlue));
+	objList.add(new sphere(vec3(-2.0, 2.5, -2.0), 1.5, whiteLight));
+	objList.add(new polygon(vec3(3.5, 0.0, -4.0), vec3(2.0, 3.5, -1.0), vec3(0.5, 0.0, -4.5), mirrorMtl));
 
 	int index = 0;
+	int prcnt = 0.05 * imageHeight;
+	cout << "Rendering...\t" << 0 << "% \n";
 	for (int j = imageHeight - 1; j >= 0; --j)
 	{
 		for (int i = 0; i < imageWidth; ++i)
@@ -97,7 +124,7 @@ int main()
 				auto u = (i + random_double()) / (imageWidth - 1);
 				auto v = (j + random_double()) / (imageHeight - 1);
 				ray r = cam.getRay(u, v);
-				pixelColor += getRayColor(r, objList, 0);
+				pixelColor += getRayColor(r, objList, background, 0);
 			}
 
 			correctColor(pixelColor, (float)numOfSamples);
@@ -109,7 +136,11 @@ int main()
 			pixels[index++] = pixG;
 			pixels[index++] = pixB;
 		}
+		if ((imageHeight - j) % prcnt == 0.0)
+			cout << "Rendering...\t" << 100 - ((float)((float) j / (float) imageHeight) * 100) << "% \n";
+
 	}
+	cout << "Done.\n";
 
 	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
 }
