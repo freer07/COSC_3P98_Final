@@ -15,6 +15,8 @@ struct intersection {
 	bool front_face;
 	material* mat;
 
+	float t, u, v; //instance variables for rectangle/cube objects
+
 	inline void set_face_normal(const ray& r, const vec3& outward_normal) {
 		front_face = dot(r.getDirection(), outward_normal) < 0;
 		norm = front_face ? outward_normal : -outward_normal;
@@ -156,6 +158,7 @@ public:
 	}
 };
 
+
 class objectList {
 public:
 	vector<object*> objects;
@@ -184,3 +187,145 @@ public:
 
 	}
 };
+
+class rectangle : public object {
+public:
+	int type;
+	float x1, x2, y1, y2, z1, z2;
+	float k;
+	material* mat;
+
+	rectangle(float coord1, float coord2, float coord3, float coord4, float p, material* m, int t)
+	{
+		if (type == 1)
+		{
+			x1 = coord1;
+			x2 = coord2;
+			y1 = coord3;
+			y2 = coord4;
+		}
+		else if (type == 2)
+		{
+			x1 = coord1;
+			x2 = coord2;
+			z1 = coord3;
+			z2 = coord4;
+		}
+		else
+		{
+			y1 = coord1;
+			y2 = coord2;
+			z1 = coord3;
+			z2 = coord4;
+		}
+
+		mat = m;
+		type = t;
+		k = p;
+	}
+
+	bool intersect(ray& r, double minDist, double maxDist, intersection& intrsct)
+	{
+		if (type == 1)
+		{
+			float t = (k - r.getOrigin().z) / (r.getDirection().z);
+			if (t <minDist || t > maxDist)
+			{
+				return false;
+			}
+
+			float x = r.getOrigin().x + t * r.getDirection().x;
+			if (x < x1 || x > x2) return false;
+			float y = r.getOrigin().y + t * r.getDirection().y;
+			if (y < y1 || y > y2) return false;
+
+			intrsct.u = (x - x1) / (x2 - x1);
+			intrsct.v = (y - y1) / (y2 - y1);
+			intrsct.t = t;
+			intrsct.mat = mat;
+			intrsct.point = r.at(t);
+
+			vec3 newNorm = vec3(0, 0, 1);
+			intrsct.set_face_normal(r, newNorm);
+			return true;
+
+		}
+		else if (type == 2)
+		{
+			float t = (k - r.getOrigin().y) / (r.getDirection().y);
+			if (t < minDist || t > maxDist)
+			{
+				return false;
+			}
+
+			float x = r.getOrigin().x + t * r.getDirection().x;
+			if (x < x1 || x > x2) return false;
+			
+			float z = r.getOrigin().z + t * r.getDirection().z;
+			if (z < z1 || z > z2) return false;
+
+			intrsct.u = (x - x1) / (x2 - x1);
+			intrsct.v = (z - z1) / (z2 - z1);
+			intrsct.t = t;
+			intrsct.mat = mat;
+			intrsct.point = r.at(t);
+
+			vec3 newNorm = vec3(0, 1, 0);
+			intrsct.set_face_normal(r, newNorm);
+			return true;
+		}
+		else
+		{
+			float t = (k - r.getOrigin().x) / (r.getDirection().x);
+			if (t < minDist || t > maxDist)
+			{
+				return false;
+			}
+
+			float y = r.getOrigin().y + t * r.getDirection().y;
+			if (y < y1 || y > y2) return false;
+
+			float z = r.getOrigin().z + t * r.getDirection().z;
+			if (z < z1 || z > z2) return false;
+
+			intrsct.u = (y - y1) / (y2 - y1);
+			intrsct.v = (z - z1) / (z2 - z1);
+			intrsct.t = t;
+			intrsct.mat = mat;
+			intrsct.point = r.at(t);
+
+			vec3 newNorm = vec3(1, 0, 0);
+			intrsct.set_face_normal(r, newNorm);
+			return true;
+		}
+	}
+};
+
+
+class cube : public object {
+public:
+
+	vec3 min, max;
+	material* mat;
+	objectList sideList;
+	cube(const vec3& cmin, const vec3& cmax, material* m)
+	{
+		min = cmin;
+		max = cmax;
+		mat = m;
+
+		sideList.add(new rectangle(cmin.x, cmax.x, cmin.y, cmax.y, cmax.z, m, 1));
+		sideList.add(new rectangle(cmin.x, cmax.x, cmin.y, cmax.y, cmin.z, m, 1));
+
+		sideList.add(new rectangle(cmin.x, cmax.x, cmin.z, cmax.z, cmax.y, m, 2));
+		sideList.add(new rectangle(cmin.x, cmax.x, cmin.z, cmax.z, cmin.y, m, 2));
+
+		sideList.add(new rectangle(cmin.y, cmax.y, cmin.z, cmax.z, cmax.x, m, 3));
+		sideList.add(new rectangle(cmin.y, cmax.y, cmin.z, cmax.z, cmin.x, m, 3));
+	}
+	bool intersect(ray& r, double tmin, double tmax, intersection intrsct)
+	{
+		return sideList.findFirstIntersection(r, tmin, tmax, intrsct);
+	}
+};
+

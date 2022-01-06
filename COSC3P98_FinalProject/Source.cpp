@@ -85,10 +85,7 @@ int main()
 	objectList objList;
 
 	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, material_center));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, material_left));
-	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
+	objList.add(new cube(vec3(130, 0, 65), vec3(295, 165, 230), material_center));
 
 	int index = 0;
 	for (int j = imageHeight - 1; j >= 0; --j)
