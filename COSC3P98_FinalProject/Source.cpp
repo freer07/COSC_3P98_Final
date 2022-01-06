@@ -85,8 +85,8 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 10;
-	camera cam(point3(0, 1, 5), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
+	const int numOfSamples = 100;
+	camera cam = *new camera(point3(0.0, 1.5, 5.0), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
 
 	//background colors
 	vec3 brightDay = vec3(0.70, 0.80, 1.00);
@@ -105,12 +105,13 @@ int main()
 	//objects
 	objectList objList;
 	objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, matteYellow));
-	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, matteBlue));
+	objList.add(new cube(vec3(0.0, 1.5, -2.0), 3.0, 3.0, 1.0, glass));
+	/*objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, matteBlue));
 	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, glass));
 	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, glass));
-	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, matteBlue));
-	objList.add(new sphere(vec3(-2.0, 2.5, -2.0), 1.5, whiteLight));
-	objList.add(new polygon(vec3(3.5, 0.0, -4.0), vec3(2.0, 3.5, -1.0), vec3(0.5, 0.0, -4.5), mirrorMtl));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, matteBlue));*/
+	objList.add(new sphere(vec3(-4.5, 2.5, -1.0), 1.5, whiteLight));
+	//objList.add(new polygon(vec3(3.5, 0.0, -4.0), vec3(2.0, 3.5, -1.0), vec3(0.5, 0.0, -4.5), mirrorMtl));
 
 	int index = 0;
 	int prcnt = 0.05 * imageHeight;
@@ -119,7 +120,7 @@ int main()
 	{
 		for (int i = 0; i < imageWidth; ++i)
 		{
-			vec3 pixelColor(0, 0, 0);			
+			vec3 pixelColor(0, 0, 0);	
 			for (int s = 0; s < numOfSamples; ++s) {	
 				auto u = (i + random_double()) / (imageWidth - 1);
 				auto v = (j + random_double()) / (imageHeight - 1);
