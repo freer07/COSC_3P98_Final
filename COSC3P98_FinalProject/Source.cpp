@@ -114,6 +114,7 @@ int main()
 
 	int index = 0;
 	int prcnt = 0.05 * imageHeight;
+	cout << "Rendering...\t" << 0 << "% \n";
 	for (int j = imageHeight - 1; j >= 0; --j)
 	{
 		for (int i = 0; i < imageWidth; ++i)
@@ -139,6 +140,7 @@ int main()
 			cout << "Rendering...\t" << 100 - ((float)((float) j / (float) imageHeight) * 100) << "% \n";
 
 	}
+	cout << "Done.\n";
 
 	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
 }
