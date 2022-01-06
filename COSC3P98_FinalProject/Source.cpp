@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <glm/glm.hpp>
+#include <omp.h>
 #include "ray.h"
 #include "vec3Utils.h"
 #include "objects.h"
@@ -115,18 +116,28 @@ int main()
 
 	int index = 0;
 	int prcnt = 0.05 * imageHeight;
+	auto startTime = time(NULL);
 	cout << "Rendering...\t" << 0 << "% \n";
 	for (int j = imageHeight - 1; j >= 0; --j)
 	{
 		for (int i = 0; i < imageWidth; ++i)
 		{
 			vec3 pixelColor(0, 0, 0);	
+			float x = 0.0, y = 0.0, z = 0.0;
+
+			# pragma omp parallel for reduction(+:x,y,z)
 			for (int s = 0; s < numOfSamples; ++s) {	
 				auto u = (i + random_double()) / (imageWidth - 1);
 				auto v = (j + random_double()) / (imageHeight - 1);
 				ray r = cam.getRay(u, v);
-				pixelColor += getRayColor(r, objList, background, 0);
+				vec3 pC = getRayColor(r, objList, background, 0);
+				x = x + pC.x;
+				y = y + pC.y;
+				z = z + pC.z;
 			}
+			pixelColor.x = x;
+			pixelColor.y = y;
+			pixelColor.z = z;
 
 			correctColor(pixelColor, (float)numOfSamples);
 
@@ -139,9 +150,10 @@ int main()
 		}
 		if ((imageHeight - j) % prcnt == 0.0)
 			cout << "Rendering...\t" << 100 - ((float)((float) j / (float) imageHeight) * 100) << "% \n";
-
 	}
+	auto endTime = time(NULL);
 	cout << "Done.\n";
+	cout << "Time taken: \t" << endTime - startTime << "s";
 
 	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
 }
