@@ -169,6 +169,74 @@ public:
 	}
 };
 
+class polygon : public object {
+public:
+	vec3 point0, point1, point2, pn;
+	float d;
+	polygon() { }
+	polygon(vec3 p0, vec3 p1, vec3 p2, material* m) {
+		point0 = p0;
+		point1 = p1;
+		point2 = p2;
+		centre = (point0 + point1 + point2) / 3;
+		mat = m;
+
+		vec3 vecA, vecB;
+		vecA = point1 - point0;//p0p1
+		vecB = point2 - point0;//p0p2
+		pn = cross(vecA, vecB);
+		d = (-1) * ((pn[0] * point0[0]) + (pn[1] * point0[1]) + (pn[2] * point0[2]));
+	}
+	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
+		//intersects with plane of triangle
+		if (fabs(dot(pn, r.getDirection())) < 0.0001)
+			return false;
+
+		float t = -1 * ((dot(pn, r.getOrigin()) + d) / (dot(pn, r.getDirection())));		
+		if (t < 0) {
+			return false;
+		}
+
+		//point of intersection
+		vec3 P = r.at(t);
+
+		//interior test of triangle
+		vec3 lineA, lineB, lineC;
+		float distA, distB, distC;
+		lineA = point0 - point1;//p0p1
+		lineB = point1 - point2;//p1p2
+		lineC = point2 - point0;//p2p0
+		vec3 C0, C1, C2;
+		C0 = P - point0;
+		C1 = P - point1;
+		C2 = P - point2;
+
+		if ((dot(pn, cross(lineA, C0)) >= 0 &&
+			dot(pn, cross(lineB, C1)) >= 0 &&
+			dot(pn, cross(lineC, C2)) >= 0) || 
+			(dot(pn, cross(lineA, C0)) <= 0 &&
+			dot(pn, cross(lineB, C1)) <= 0 &&
+			dot(pn, cross(lineC, C2)) <= 0)) {
+
+			vec3 dvec = P - r.getOrigin();
+			float dist = sqrt(dot(dvec, dvec));
+			if (dist < minDist || maxDist < dist)
+				return false;
+
+			// P is inside the triangle
+			intersect.dist = dist;
+			intersect.point = P;
+			intersect.mat = mat;
+			vec3 normal = pn;
+			intersect.set_face_normal(r, normal);
+			return true; 
+		}
+
+		
+		return false;
+	}
+};
+
 class objectList {
 public:
 	vector<object*> objects;

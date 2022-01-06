@@ -85,20 +85,21 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 100;
+	const int numOfSamples = 10;
 	camera cam(point3(0, 1, 5), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
 
 	//background colors
 	vec3 brightDay = vec3(0.70, 0.80, 1.00);
 	vec3 noLight = vec3(0.0, 0.0, 0.0);
 
-	vec3 background = noLight;
+	vec3 background = brightDay;
 
 	//materials
 	material* matteYellow = new lambertian(vec3(0.8, 0.8, 0.0));
 	material* matteBlue = new lambertian(vec3(0.1, 0.2, 0.5));
 	material* glass   = new dielectric(1.5);
 	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
+	material* mirrorMtl = new metal(color(0.8, 0.85, 0.88));
 	material* whiteLight = new lightEmitting(vec3(4.0, 4.0, 4.0));//light is brighter than 1 inorder to light other objects 
 
 	//objects
@@ -107,10 +108,12 @@ int main()
 	objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, matteBlue));
 	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, glass));
 	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, glass));
-	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, blryMtl));
-	objList.add(new sphere(vec3(2.0, 2.5, -3.0), 1.5, whiteLight));
+	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, matteBlue));
+	objList.add(new sphere(vec3(-2.0, 2.5, -2.0), 1.5, whiteLight));
+	objList.add(new polygon(vec3(3.5, 0.0, -4.0), vec3(2.0, 3.5, -1.0), vec3(0.5, 0.0, -4.5), mirrorMtl));
 
 	int index = 0;
+	int prcnt = 0.05 * imageHeight;
 	for (int j = imageHeight - 1; j >= 0; --j)
 	{
 		for (int i = 0; i < imageWidth; ++i)
@@ -132,6 +135,9 @@ int main()
 			pixels[index++] = pixG;
 			pixels[index++] = pixB;
 		}
+		if ((imageHeight - j) % prcnt == 0.0)
+			cout << "Rendering...\t" << 100 - ((float)((float) j / (float) imageHeight) * 100) << "% \n";
+
 	}
 
 	stbi_write_png("RayTrace.png", imageWidth, imageHeight, CHANNEL_NUM, pixels, imageWidth * CHANNEL_NUM);
