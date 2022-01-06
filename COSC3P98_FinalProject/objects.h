@@ -232,9 +232,7 @@ public:
 			vec3 normal = pn;
 			intersect.set_face_normal(r, normal);
 			return true; 
-		}
-
-		
+		}		
 		return false;
 	}
 };
@@ -270,142 +268,231 @@ public:
 
 class rectangle : public object {
 public:
-	int type;
-	float x1, x2, y1, y2, z1, z2;
-	float k;
-	material* mat;
+	vec3 point0, point1, point2, point3, pn;
+	float d;
 
-	rectangle(float coord1, float coord2, float coord3, float coord4, float p, material* m, int t)
-	{
-		if (type == 1)
-		{
-			x1 = coord1;
-			x2 = coord2;
-			y1 = coord3;
-			y2 = coord4;
-		}
-		else if (type == 2)
-		{
-			x1 = coord1;
-			x2 = coord2;
-			z1 = coord3;
-			z2 = coord4;
-		}
-		else
-		{
-			y1 = coord1;
-			y2 = coord2;
-			z1 = coord3;
-			z2 = coord4;
-		}
+	rectangle(const vec3 p0, const vec3 p1, const vec3 p2, const vec3 p3, material* m) {
+		point0 = p0;
+		point1 = p1;
+		point2 = p2;
+		point3 = p3;
+		centre = (point0 + point1 + point2 + point3) / 3;
 
 		mat = m;
-		type = t;
-		k = p;
+
+		vec3 vecA, vecB;
+		vecA = point1 - point0;//p0p1
+		vecB = point2 - point0;//p0p2
+		pn = cross(vecA, vecB);
+		d = (-1) * ((pn[0] * point0[0]) + (pn[1] * point0[1]) + (pn[2] * point0[2]));
 	}
 
-	bool intersect(ray& r, double minDist, double maxDist, intersection& intrsct)
-	{
-		if (type == 1)
-		{
-			float t = (k - r.getOrigin().z) / (r.getDirection().z);
-			if (t <minDist || t > maxDist)
-			{
-				return false;
-			}
+	bool intersect(ray& r, double minDist, double maxDist, intersection& intrsct) {
+		//intersects with plane
+		if (fabs(dot(pn, r.getDirection())) < 0.0001)
+			return false;
 
-			float x = r.getOrigin().x + t * r.getDirection().x;
-			if (x < x1 || x > x2) return false;
-			float y = r.getOrigin().y + t * r.getDirection().y;
-			if (y < y1 || y > y2) return false;
-
-			intrsct.u = (x - x1) / (x2 - x1);
-			intrsct.v = (y - y1) / (y2 - y1);
-			intrsct.t = t;
-			intrsct.mat = mat;
-			intrsct.point = r.at(t);
-
-			vec3 newNorm = vec3(0, 0, 1);
-			intrsct.set_face_normal(r, newNorm);
-			return true;
-
+		float t = -1 * ((dot(pn, r.getOrigin()) + d) / (dot(pn, r.getDirection())));
+		if (t < 0) {
+			return false;
 		}
-		else if (type == 2)
-		{
-			float t = (k - r.getOrigin().y) / (r.getDirection().y);
-			if (t < minDist || t > maxDist)
-			{
+
+		//point of intersection
+		vec3 P = r.at(t);
+
+		//interior test
+		vec3 lineA, lineB, lineC, lineD;
+		float distA, distB, distC, distD;
+		lineA = point0 - point1;//p0p1
+		lineB = point1 - point2;//p1p2
+		lineC = point2 - point3;//p2p3
+		lineD = point3 - point0;//p3p0
+		vec3 C0, C1, C2, C3;
+		C0 = P - point0;
+		C1 = P - point1;
+		C2 = P - point2;
+		C3 = P - point3;
+
+		if ((dot(pn, cross(lineA, C0)) >= 0 &&
+			dot(pn, cross(lineB, C1)) >= 0 &&
+			dot(pn, cross(lineC, C2)) >= 0 &&
+			dot(pn, cross(lineD, C3)) >= 0) ||
+			(dot(pn, cross(lineA, C0)) <= 0 &&
+				dot(pn, cross(lineB, C1)) <= 0 &&
+				dot(pn, cross(lineC, C2)) <= 0 &&
+				dot(pn, cross(lineD, C3)) <= 0)) {
+
+			vec3 dvec = P - r.getOrigin();
+			float dist = sqrt(dot(dvec, dvec));
+			if (dist < minDist || maxDist < dist)
 				return false;
-			}
 
-			float x = r.getOrigin().x + t * r.getDirection().x;
-			if (x < x1 || x > x2) return false;
-			
-			float z = r.getOrigin().z + t * r.getDirection().z;
-			if (z < z1 || z > z2) return false;
-
-			intrsct.u = (x - x1) / (x2 - x1);
-			intrsct.v = (z - z1) / (z2 - z1);
-			intrsct.t = t;
+			// P is inside the triangle
+			intrsct.dist = dist;
+			intrsct.point = P;
 			intrsct.mat = mat;
-			intrsct.point = r.at(t);
-
-			vec3 newNorm = vec3(0, 1, 0);
-			intrsct.set_face_normal(r, newNorm);
+			vec3 normal = pn;
+			intrsct.set_face_normal(r, normal);
 			return true;
 		}
-		else
-		{
-			float t = (k - r.getOrigin().x) / (r.getDirection().x);
-			if (t < minDist || t > maxDist)
-			{
-				return false;
-			}
-
-			float y = r.getOrigin().y + t * r.getDirection().y;
-			if (y < y1 || y > y2) return false;
-
-			float z = r.getOrigin().z + t * r.getDirection().z;
-			if (z < z1 || z > z2) return false;
-
-			intrsct.u = (y - y1) / (y2 - y1);
-			intrsct.v = (z - z1) / (z2 - z1);
-			intrsct.t = t;
-			intrsct.mat = mat;
-			intrsct.point = r.at(t);
-
-			vec3 newNorm = vec3(1, 0, 0);
-			intrsct.set_face_normal(r, newNorm);
-			return true;
-		}
+		return false;
 	}
 };
 
 
 class cube : public object {
 public:
-
-	vec3 min, max;
-	material* mat;
+	vec3 cntr;
+	float width, height, depth;
 	objectList sideList;
-	cube(const vec3& cmin, const vec3& cmax, material* m)
-	{
-		min = cmin;
-		max = cmax;
+	cube(const vec3 c, const float& w, const float& h, const float& d, material* m) {
+		cntr = c;
 		mat = m;
+		width = w;
+		height = h;
+		depth = d;		
 
-		sideList.add(new rectangle(cmin.x, cmax.x, cmin.y, cmax.y, cmax.z, m, 1));
-		sideList.add(new rectangle(cmin.x, cmax.x, cmin.y, cmax.y, cmin.z, m, 1));
+		//front face +Z
+		vec3 p0, p1, p2, p3;
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y + height / 2;
+		p0.z = p0.z + depth / 2;
 
-		sideList.add(new rectangle(cmin.x, cmax.x, cmin.z, cmax.z, cmax.y, m, 2));
-		sideList.add(new rectangle(cmin.x, cmax.x, cmin.z, cmax.z, cmin.y, m, 2));
+		p1.x = p1.x = p1.x + width / 2;
+		p1.y = p1.y = p1.y + height / 2;
+		p1.z = p1.z + depth / 2;
 
-		sideList.add(new rectangle(cmin.y, cmax.y, cmin.z, cmax.z, cmax.x, m, 3));
-		sideList.add(new rectangle(cmin.y, cmax.y, cmin.z, cmax.z, cmin.x, m, 3));
+		p2.x = p2.x + width / 2;
+		p2.y = p2.y - height / 2;
+		p2.z = p2.z + depth / 2;
+
+		p3.x = p3.x - width / 2;
+		p3.y = p3.y - height / 2;
+		p3.z = p3.z + depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
+
+		//back face -Z
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y + height / 2;
+		p0.z = p0.z - depth / 2;
+
+		p1.x = p1.x + width / 2;
+		p1.y = p1.y + height / 2;
+		p1.z = p1.z - depth / 2;
+
+		p2.x = p2.x + width / 2;
+		p2.y = p2.y - height / 2;
+		p2.z = p2.z - depth / 2;
+
+		p3.x = p3.x - width / 2;
+		p3.y = p3.y - height / 2;
+		p3.z = p3.z - depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
+
+		//left face -X
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y + height / 2;
+		p0.z = p0.z - depth / 2;
+
+		p1.x = p1.x - width / 2;
+		p1.y = p1.y + height / 2;
+		p1.z = p1.z + depth / 2;		
+
+		p2.x = p2.x - width / 2;
+		p2.y = p2.y - height / 2;
+		p2.z = p2.z + depth / 2;
+
+		p3.x = p3.x - width / 2;
+		p3.y = p3.y - height / 2;
+		p3.z = p3.z - depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
+
+		//right face +X
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x + width / 2;
+		p0.y = p0.y + height / 2;
+		p0.z = p0.z - depth / 2;
+
+		p1.x = p1.x + width / 2;
+		p1.y = p1.y + height / 2;
+		p1.z = p1.z + depth / 2;
+
+		p2.x = p2.x + width / 2;
+		p2.y = p2.y - height / 2;
+		p2.z = p2.z + depth / 2;
+
+		p3.x = p3.x + width / 2;
+		p3.y = p3.y - height / 2;
+		p3.z = p3.z - depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
+
+		//top face +Y
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y + height / 2;
+		p0.z = p0.z - depth / 2;
+
+		p1.x = p1.x - width / 2;
+		p1.y = p1.y + height / 2;
+		p1.z = p1.z + depth / 2;
+
+		p2.x = p2.x + width / 2;
+		p2.y = p2.y + height / 2;
+		p2.z = p2.z + depth / 2;
+
+		p3.x = p3.x + width / 2;
+		p3.y = p3.y + height / 2;
+		p3.z = p3.z - depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
+
+		//bottom face -Y
+		p0 = c;
+		p1 = c;
+		p2 = c;
+		p3 = c;
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y - height / 2;
+		p0.z = p0.z - depth / 2;
+
+		p1.x = p1.x - width / 2;
+		p1.y = p1.y - height / 2;
+		p1.z = p1.z + depth / 2;
+
+		p2.x = p2.x + width / 2;
+		p2.y = p2.y - height / 2;
+		p2.z = p2.z + depth / 2;
+
+		p3.x = p3.x + width / 2;
+		p3.y = p3.y - height / 2;
+		p3.z = p3.z - depth / 2;
+
+		sideList.add(new rectangle(p0, p1, p2, p3, m));
 	}
-	bool intersect(ray& r, double tmin, double tmax, intersection intrsct)
-	{
-		return sideList.findFirstIntersection(r, tmin, tmax, intrsct);
+	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
+		return sideList.findFirstIntersection(r, minDist, maxDist, intersect);
 	}
 };
 
