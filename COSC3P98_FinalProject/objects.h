@@ -362,8 +362,8 @@ public:
 		p0.y = p0.y + height / 2;
 		p0.z = p0.z + depth / 2;
 
-		p1.x = p1.x = p1.x + width / 2;
-		p1.y = p1.y = p1.y + height / 2;
+		p1.x = p1.x + width / 2;
+		p1.y = p1.y + height / 2;
 		p1.z = p1.z + depth / 2;
 
 		p2.x = p2.x + width / 2;
@@ -374,30 +374,30 @@ public:
 		p3.y = p3.y - height / 2;
 		p3.z = p3.z + depth / 2;
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 
 		//back face -Z
 		p0 = c;
 		p1 = c;
 		p2 = c;
 		p3 = c;
-		p0.x = p0.x - width / 2;
+		p0.x = p0.x + width / 2;
 		p0.y = p0.y + height / 2;
 		p0.z = p0.z - depth / 2;
 
-		p1.x = p1.x + width / 2;
+		p1.x = p1.x - width / 2;
 		p1.y = p1.y + height / 2;
 		p1.z = p1.z - depth / 2;
 
-		p2.x = p2.x + width / 2;
+		p2.x = p2.x - width / 2;
 		p2.y = p2.y - height / 2;
 		p2.z = p2.z - depth / 2;
 
-		p3.x = p3.x - width / 2;
+		p3.x = p3.x + width / 2;
 		p3.y = p3.y - height / 2;
-		p3.z = p3.z - depth / 2;
+		p3.z = p3.z - depth / 2;		
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 
 		//left face -X
 		p0 = c;
@@ -420,7 +420,7 @@ public:
 		p3.y = p3.y - height / 2;
 		p3.z = p3.z - depth / 2;
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 
 		//right face +X
 		p0 = c;
@@ -429,21 +429,21 @@ public:
 		p3 = c;
 		p0.x = p0.x + width / 2;
 		p0.y = p0.y + height / 2;
-		p0.z = p0.z - depth / 2;
+		p0.z = p0.z + depth / 2;
 
 		p1.x = p1.x + width / 2;
 		p1.y = p1.y + height / 2;
-		p1.z = p1.z + depth / 2;
+		p1.z = p1.z - depth / 2;
 
 		p2.x = p2.x + width / 2;
 		p2.y = p2.y - height / 2;
-		p2.z = p2.z + depth / 2;
+		p2.z = p2.z - depth / 2;
 
 		p3.x = p3.x + width / 2;
 		p3.y = p3.y - height / 2;
-		p3.z = p3.z - depth / 2;
+		p3.z = p3.z + depth / 2;		
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 
 		//top face +Y
 		p0 = c;
@@ -454,29 +454,25 @@ public:
 		p0.y = p0.y + height / 2;
 		p0.z = p0.z - depth / 2;
 
-		p1.x = p1.x - width / 2;
+		p1.x = p1.x + width / 2;
 		p1.y = p1.y + height / 2;
-		p1.z = p1.z + depth / 2;
+		p1.z = p1.z - depth / 2;
 
 		p2.x = p2.x + width / 2;
 		p2.y = p2.y + height / 2;
 		p2.z = p2.z + depth / 2;
 
-		p3.x = p3.x + width / 2;
+		p3.x = p3.x - width / 2;
 		p3.y = p3.y + height / 2;
-		p3.z = p3.z - depth / 2;
+		p3.z = p3.z + depth / 2;
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 
 		//bottom face -Y
 		p0 = c;
 		p1 = c;
 		p2 = c;
 		p3 = c;
-		p0.x = p0.x - width / 2;
-		p0.y = p0.y - height / 2;
-		p0.z = p0.z - depth / 2;
-
 		p1.x = p1.x - width / 2;
 		p1.y = p1.y - height / 2;
 		p1.z = p1.z + depth / 2;
@@ -489,7 +485,11 @@ public:
 		p3.y = p3.y - height / 2;
 		p3.z = p3.z - depth / 2;
 
-		sideList.add(new rectangle(p0, p1, p2, p3, m));
+		p0.x = p0.x - width / 2;
+		p0.y = p0.y - height / 2;
+		p0.z = p0.z - depth / 2;
+
+		sideList.add(new rectangle(p3, p2, p1, p0, m));
 	}
 	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
 		return sideList.findFirstIntersection(r, minDist, maxDist, intersect);
