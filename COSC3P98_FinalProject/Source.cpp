@@ -196,7 +196,6 @@ objectList extractXMLObjects()
 		case poly:
 			
 			float x1 = child.second.get<float>("<xmlattr>.x1");
-			cout << "swag";
 			float y1 = child.second.get<float>("<xmlattr>.y1");
 			float z1 = child.second.get<float>("<xmlattr>.z1");
 			float x2 = child.second.get<float>("<xmlattr>.x2");
@@ -208,10 +207,6 @@ objectList extractXMLObjects()
 			objList.add(new polygon(vec3(x1, y1, z1), vec3(x2, y2, z2), vec3(x3, y3, z3), mat));
 			break;
 		}
-		cout << "object type: " << child.second.get<string>("<xmlattr>.type") << endl;
-		cout << "Material Type: " << child.second.get<string>("<xmlattr>.material") << endl;
-		float temp = child.second.get<float>("<xmlattr>.r");
-		cout << temp;
 	}
 	return objList;
 }
