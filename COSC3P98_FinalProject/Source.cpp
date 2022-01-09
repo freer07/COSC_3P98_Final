@@ -41,7 +41,8 @@ using namespace std;
 enum object_type {
 	sph,
 	cub,
-	poly
+	poly,
+	rect
 };
 
 enum object_material {
@@ -107,6 +108,7 @@ object_type getEnum(string const& inString)
 	if (inString == "cube") return cub;
 	if (inString == "sphere") return sph;
 	if (inString == "polygon") return poly;
+	if (inString == "rectangle") return rect;
 }
 
 object_material getMaterialEnum(string const& inString)
@@ -130,7 +132,8 @@ objectList extractXMLObjects()
 		
 		string objType = child.second.get<string>("<xmlattr>.type");
 		string objMaterial;
-		float objR, objG, objB, objX, objY, objZ, objW, objH, objRadOrDep, objMatVal;//Variables used to instantiate objects once their values are retrieved
+		float objR, objG, objB, objX, objY, objZ, objW, objH, objRadOrDep, objMatVal,
+			x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;//Variables used to instantiate objects once their values are retrieved
 		material* mat = new lambertian(vec3(0.8, 0.8, 0.0));//default to avoid 'potentially uninitialized local pointer'
 		
 		objMaterial = child.second.get<string>("<xmlattr>.material");
@@ -196,16 +199,33 @@ objectList extractXMLObjects()
 			break;
 		case poly:
 			
-			float x1 = child.second.get<float>("<xmlattr>.x1");
-			float y1 = child.second.get<float>("<xmlattr>.y1");
-			float z1 = child.second.get<float>("<xmlattr>.z1");
-			float x2 = child.second.get<float>("<xmlattr>.x2");
-			float y2 = child.second.get<float>("<xmlattr>.y2");
-			float z2 = child.second.get<float>("<xmlattr>.z2");
-			float x3 = child.second.get<float>("<xmlattr>.x3");
-			float y3 = child.second.get<float>("<xmlattr>.y3");
-			float z3 = child.second.get<float>("<xmlattr>.z3");
+			x1 = child.second.get<float>("<xmlattr>.x1");
+			y1 = child.second.get<float>("<xmlattr>.y1");
+			z1 = child.second.get<float>("<xmlattr>.z1");
+			x2 = child.second.get<float>("<xmlattr>.x2");
+			y2 = child.second.get<float>("<xmlattr>.y2");
+			z2 = child.second.get<float>("<xmlattr>.z2");
+			x3 = child.second.get<float>("<xmlattr>.x3");
+			y3 = child.second.get<float>("<xmlattr>.y3");
+			z3 = child.second.get<float>("<xmlattr>.z3");
 			objList.add(new polygon(vec3(x1, y1, z1), vec3(x2, y2, z2), vec3(x3, y3, z3), mat));
+			break;
+
+		case rect:
+
+			x1 = child.second.get<float>("<xmlattr>.x1");
+			y1 = child.second.get<float>("<xmlattr>.y1");
+			z1 = child.second.get<float>("<xmlattr>.z1");
+			x2 = child.second.get<float>("<xmlattr>.x2");
+			y2 = child.second.get<float>("<xmlattr>.y2");
+			z2 = child.second.get<float>("<xmlattr>.z2");
+			x3 = child.second.get<float>("<xmlattr>.x3");
+			y3 = child.second.get<float>("<xmlattr>.y3");
+			z3 = child.second.get<float>("<xmlattr>.z3");
+			x4 = child.second.get<float>("<xmlattr>.x4");
+			y4 = child.second.get<float>("<xmlattr>.y4");
+			z4 = child.second.get<float>("<xmlattr>.z4");
+			objList.add(new rectangle(vec3(x1, y1, z1), vec3(x2, y2, z2), vec3(x3, y3, z3), vec3(x4, y4, z4), mat));
 			break;
 		}
 	}

@@ -187,6 +187,7 @@ public:
 		vecA = point1 - point0;//p0p1
 		vecB = point2 - point0;//p0p2
 		pn = cross(vecA, vecB);
+		pn = normalize(pn);
 		d = (-1) * ((pn[0] * point0[0]) + (pn[1] * point0[1]) + (pn[2] * point0[2]));
 	}
 	bool intersect(ray& r, double minDist, double maxDist, intersection& intersect) {
@@ -284,6 +285,7 @@ public:
 		vecA = point1 - point0;//p0p1
 		vecB = point2 - point0;//p0p2
 		pn = cross(vecA, vecB);
+		pn = normalize(pn);
 		d = (-1) * ((pn[0] * point0[0]) + (pn[1] * point0[1]) + (pn[2] * point0[2]));
 	}
 
