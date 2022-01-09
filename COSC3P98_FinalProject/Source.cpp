@@ -221,8 +221,8 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 100;
-	camera cam = *new camera(point3(0.0, 1.5, 5.0), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
+	const int numOfSamples = 1000;
+	camera cam = *new camera(point3(2.5, 1.5, 5.0), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
 
 	//background colors
 	vec3 brightDay = vec3(0.70, 0.80, 1.00);
