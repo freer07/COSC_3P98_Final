@@ -247,7 +247,7 @@ int main()
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 5000;
+	const int numOfSamples = 1000;
 	camera cam = *new camera(vec3(0.0, 5.0, 15.0), vec3(0, 5, 0), vec3(0, 1, 0), 45, aspectRatio);
 
 	//background colors
