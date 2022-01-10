@@ -1,3 +1,5 @@
+// Alexander Freer 6452551
+// Yanis Souiki 6284392
 #include "vec3Utils.h"
 #include "ray.h"
 #include <cmath>
@@ -5,21 +7,6 @@
 
 class camera {
 public:
-	camera()
-	{
-		auto ratio = 16.0 / 9.0;
-		auto viewH = 2.0;
-		auto viewW = ratio * viewH;
-		auto focal = 1.0;
-		
-		origin = vec3(0, 0, 0);
-		horiz = vec3(viewH, 0, 0);
-		vert = vec3(0, viewH, 0);
-		
-		vec3 tempVec = vec3(0, 0, focal);
-		lowerLeft = origin - (horiz / 2) - (vert / 2) - tempVec;
-	}
-
 	camera(vec3 lookfrom, vec3 lookat, vec3 up, float fov, float ratio)
 	{
 		float theta = fov * (PI / 180);

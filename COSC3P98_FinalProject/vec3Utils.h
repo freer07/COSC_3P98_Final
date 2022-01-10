@@ -1,3 +1,7 @@
+// Alexander Freer 6452551
+// Yanis Souiki 6284392
+
+//This is a collection of helper functions for the vec3 object primarly implemented from “Ray Tracing in One Weekend.” raytracing.github.io/books/RayTracingInOneWeekend.html  
 #pragma once
 #include <glm/glm.hpp>
 #include <cstdlib>

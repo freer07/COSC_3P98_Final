@@ -1,3 +1,5 @@
+// Alexander Freer 6452551
+// Yanis Souiki 6284392 
 #include <iostream>
 #include <stdio.h>
 #include <stdint.h>
@@ -10,9 +12,6 @@
 #include "objects.h"
 #include "camera.h"
 #include <string>
-
-
-
 #include <boost/property_tree/ptree.hpp>
 using boost::property_tree::ptree;
 #include<boost/property_tree/xml_parser.hpp>
@@ -28,11 +27,6 @@ using boost::property_tree::ptree;
 #include "stb-master/stb_image_write.h"
 
 #define CHANNEL_NUM 3
-
-// Type aliases for vec3
-using point3 = vec3;   // 3D point
-using color = vec3;    // RGB color
-
 
 #define M_PI 3.14159265358979323846
 using namespace glm;
@@ -51,10 +45,14 @@ enum object_material {
 	met,
 	blurry,
 	light
-
 };
 
+
+/*
+* This is a recursive funciton used to determine the color of a pixel represented by a ray
+*/
 vec3 getRayColor(ray& r, objectList& objList, vec3 background, int depth) {
+	//stop if max depth is reached
 	if (depth > MAX_DEPTH) {
 		return vec3(0, 0, 0);
 	}
@@ -67,15 +65,21 @@ vec3 getRayColor(ray& r, objectList& objList, vec3 background, int depth) {
 	}
 
 	ray scattered;
-	color attenuation;
-	if (intersect.mat->scatter(r, intersect, attenuation, scattered)) {
-		return attenuation * getRayColor(scattered, objList, background, ++depth);
+	vec3 color;
+	//if the material scattered the ray then recurse on the new ray "scattered"
+	if (intersect.mat->scatter(r, intersect, color, scattered)) {
+		return color * getRayColor(scattered, objList, background, ++depth);
 	}
+	//else ray was absorbed by the material and return the color
 	else {
-		return attenuation;
+		return color;
 	}
 }
 
+/*
+* This function returns min if f is less than min 
+* and max if f is greater than max
+*/
 float clamp(float f, float min, float max) {
 	if (f < min) {
 		return min;
@@ -86,6 +90,7 @@ float clamp(float f, float min, float max) {
 	return f;
 }
 
+//This function is used to ensure the rgb values are valid for the PNG document
 void correctColor(vec3& color, float spp) {
 	if (color[0] == NAN) {
 		color[0] = 0.0;
@@ -120,6 +125,7 @@ object_material getMaterialEnum(string const& inString)
 	if (inString == "light") return light;
 }
 
+//This function reads the xml file and creates the list of objects
 objectList extractXMLObjects()
 {
 	ptree pt;
@@ -236,38 +242,19 @@ int main()
 {
 	objectList objList = extractXMLObjects();
 	srand(time(NULL));
-	const int imageWidth = 500;	
+	const int imageWidth = 400;	
 	const auto aspectRatio = 16.0 / 9.0;
 	const int imageHeight = imageWidth / aspectRatio;
 	uint8_t* pixels = new uint8_t[imageWidth * imageHeight * CHANNEL_NUM];
 
-	const int numOfSamples = 1000;
-	camera cam = *new camera(point3(2.5, 1.5, 5.0), point3(0, 0, -1), vec3(0, 1, 0), 45, aspectRatio);
+	const int numOfSamples = 5000;
+	camera cam = *new camera(vec3(0.0, 5.0, 15.0), vec3(0, 5, 0), vec3(0, 1, 0), 45, aspectRatio);
 
 	//background colors
 	vec3 brightDay = vec3(0.70, 0.80, 1.00);
+	vec3 dimLight = vec3(0.30, 0.40, 0.60);
 	vec3 noLight = vec3(0.0, 0.0, 0.0);
-
-	vec3 background = brightDay;
-	/*
-	//materials
-	material* matteYellow = new lambertian(vec3(0.8, 0.8, 0.0));
-	material* matteBlue = new lambertian(vec3(0.1, 0.2, 0.5));
-	material* glass   = new dielectric(1.5);
-	material* blryMtl = new blurryMetal(vec3(0.3, 0.3, 0.6), 0.3);
-	material* mirrorMtl = new metal(vec3(0.8, 0.85, 0.88));
-	material* whiteLight = new lightEmitting(vec3(4.0, 4.0, 4.0));//light is brighter than 1 inorder to light other objects 
-	*/
-	//objects
-	//objectList objList;
-	//objList.add(new sphere(vec3(0.0, -100.5, -1.0), 100.0, matteYellow));
-	//objList.add(new cube(vec3(0.0, 1.5, -2.0), 3.0, 3.0, 1.0, glass));
-	/*objList.add(new sphere(vec3(0.0, 0.0, -1.0), 0.5, matteBlue));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), 0.5, glass));
-	objList.add(new sphere(vec3(-1.0, 0.0, -1.0), -0.45, glass));
-	objList.add(new sphere(vec3(1.0, 0.0, -1.0), 0.5, matteBlue));*/
-	//objList.add(new sphere(vec3(-4.5, 2.5, -1.0), 1.5, whiteLight));
-	//objList.add(new polygon(vec3(3.5, 0.0, -4.0), vec3(2.0, 3.5, -1.0), vec3(0.5, 0.0, -4.5), mirrorMtl));
+	vec3 background = noLight;
 
 	int index = 0;
 	int prcnt = 0.05 * imageHeight;

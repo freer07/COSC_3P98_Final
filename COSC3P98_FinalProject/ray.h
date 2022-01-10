@@ -1,3 +1,5 @@
+// Alexander Freer 6452551
+// Yanis Souiki 6284392
 #ifndef ray_h
 #define ray_h
 #include <glm/glm.hpp>
