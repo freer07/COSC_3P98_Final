@@ -1,0 +1,8 @@
+<scene>
+	<object>
+		<newRectangle type="rectangle" material="lambertian" r="0.1" g="0.2" b="0.5" x1 ="-10.0" y1="0.0" z1="0" x2="-10.0" y2="0.0" z2="-10.0" x3="10.0" y3="0.0" z3="-10.0" x4="10.0" y4="0.0" z4="0.0" matVal="0"></newRectangle>
+		<newSphere type="sphere" material="light" r="10" g="10" b="10" x="-5.0" y="10.0" z="-5.0" rad="4" x1 ="-10.0" y1="0.0" z1="0" x2="-10.0" y2="0.0" z2="-10.0" x3="10.0" y3="0.0" z3="-10.0" x4="10.0" y4="0.0" z4="0.0" matVal="0"></newSphere>
+		<newSphere type="sphere" material="dielectric" r="0" g="0" b="0" x="-2.0" y="2.0" z="-5.0" rad="1.5" x1 ="-10.0" y1="0.0" z1="0" x2="-10.0" y2="0.0" z2="-10.0" x3="10.0" y3="0.0" z3="-10.0" x4="10.0" y4="0.0" z4="0.0" matVal="1.5"></newSphere>
+		<newSphere type="sphere" material="blurry" r="0.3" g="0.3" b="0.6" x="2.5" y="2.0" z="-5.0" rad="2.0" x1 ="-10.0" y1="0.0" z1="0" x2="-10.0" y2="0.0" z2="-10.0" x3="10.0" y3="0.0" z3="-10.0" x4="10.0" y4="0.0" z4="0.0" matVal="0.3"></newSphere>
+	</object>
+</scene>
